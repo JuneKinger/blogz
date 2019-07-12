@@ -1,20 +1,45 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
     <head>
         <title>{{title}}</title>
         <style>
-            h1 {
-                text-align: center;
+            .error {
+                color: red;
             }
-            .error {color:red; }
+            
+            .align {
+                float: right;
+                padding-right: 16px
+            }
+            
+            .pad1 {
+                padding-right: 16px
+            }
+
         </style>
     </head>
-    <body>
-        <nav>
-            <a href='/blog'>Main Blog Page</a> 
-            <a style = "display: inline-block" href='/newpost'>Add New Blog Page</a>
-        </nav>
-        {% block content %}
-        {% endblock %}
-    </body>
+<body>
+        <a href='/' class = "pad1">Home</a>
+        <a href='/blog' class = "pad1">all posts</a>
+        <a href='/newpost'>new post</a>
+
+        <a href='/logout' class = 'align'>logout</a>
+        <a href='/login'  class = 'align'>login</a>
+
+    </nav>
+ 
+    {% with messages = get_flashed_messages(with_categories=True) %}
+    <ul>
+
+        {% for category, message in messages %}
+
+            <li class="{{category}}">{{message}}</li>
+        {% endfor %}
+    </ul>
+    {% endwith %} 
+
+    {% block content %}
+    {% endblock %}
+
+</body>
 </html>

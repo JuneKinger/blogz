@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block content %}
+        <h1>Signup</h1>
+        <style>
+            .error { color:red; }
+
+        </style>
+
+        <form action='/signup' method="POST">
+            <!--- create a table with margin what pushes up the header -->
+            <table style="margin-bottom:10px;">
+            <tr>
+                <!--- span will span the error on the same line as input. value= will display the current value -->
+                <td>Username</td>
+                <td><input type="text" name="user_name"/>
+                <span class = "error">{{ user_name_err }}</span> 
+                </td>
+            </tr>
+            <div>
+                <br>
+            </div>
+            <tr>
+                <td>Password</td>
+                <td><input type="password" name="passwd"/>
+                <span class = "error">{{ passwd_err }}</span></td>
+            <div>
+                <br>
+            </div>
+            <tr>
+                <td>Verify Password</td>
+                <td><input type="password" name="verify_passwd" />
+                <span class = "error">{{ verify_passwd_err }}</span>
+                </td>
+            </tr>
+            <tr>
+                <td><input type="submit" value="Submit Query" /></td>
+            </tr>  
+        </form>
+        <div>
+            <br>
+        </div>
+{% endblock %}
