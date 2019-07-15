@@ -1,26 +1,35 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<head>
-    <h1>Add a Blog Entry</h1>
-</head>
-<form action="/newpost" method="post">
-    <label>
-        Title for your new blog:
+<style>
+    .error {
+        color: red;
+        }
+
+    .mytext {
+        width: 325px;
+               }
+    .largetext {
+        font-size: 20px;
+    }
+</style>
+
+<h1>new post</h1>
+<form action="/newpost" method="POST">
+    <label class = 'largetext'>
+        title
     </label>
     <br>
-        <input type="text" name="blog_title" value="{{ blog_title }}"/>
-    <br>
-        <p class = "error">{{ username_err }}</p>
-    <label>
-        <br>Your new blog:</br>
+        <input class = "mytext" type="text" name="blog_title" value="{{ blog_title }}"/>
+        <span class = "error">{{ title_err }}</span>
+    <label class = 'largetext'>
+        <br>post</br>
     </label>
     <!-- NOTE: textarea has no value= like input has -->
-    <textarea name="blog_body" rows='5' cols='30'{{ blog_body }}></textarea>
+    <textarea name="blog_body" rows='10' cols='40'{{ blog_body }}></textarea>
+    <span class = "error">{{ body_err }}</span>
     <br>
-    <p class = "error">{{ body_err }}</p>
-    <input type="submit" value='Add entry' />
-
+    <input type="submit" value='Submit Query'  style="font-size: large"/>
 </form>
 
 {% endblock %}

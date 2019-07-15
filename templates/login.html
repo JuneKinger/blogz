@@ -1,32 +1,40 @@
 {% extends "base.html" %}
 
 {% block content %}
-<head>
     <style>
         .error {
             color: red;
         }
+        .mytext {
+               width: 200px;
+               }
+        td.largetext {
+            font-size: 20px;
+        }
+        a {
+            display: inline-block; 
+            margin-left: 5px;
+        }
     </style>
-</head>
 <h1>Login</h1>
-<form action="/login" method="post">
+<form action="/login" method="POST">
     <table>
         <tr>
-            <td><label for="username">Username</label></td>
+            <td class = "largetext"><label for="username">Username</label></td>
             <td>
-                <input name="user_name" type="text" value="{{ username }}">
+                <input name="user_name" type="text" class = 'mytext' value="{{ username }}">
                 <span class = "error">{{ user_name_err }}</span> 
             </td>
         </tr>
         <tr>
-            <td><label for="password">Password</label></td>
+            <td class = "largetext"><label for="password">Password</label></td>
             <td>
-                <input name="password" type="password">
+                <input name="password" type="password" class = 'mytext'>
                 <span class = "error">{{ passwd_err }}</span> 
             </td>
         </tr>
     </table>
-    <input type="submit" value="Submit Query">
+    <input type="submit" value="Submit Query" style="font-size: large"/>
     <p>Don't have an account?<a href="/signup">Create one!</a></p>
 </form>
 {% endblock %}

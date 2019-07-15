@@ -7,8 +7,10 @@
    <h3>
       <a href='/blog?id={{ blog.id }}'>{{ blog.title }}</a>
    </h3>
-   <p>{{ blog.title }}</p>
    <p>{{ blog.body}}</p>
+   <!-- {% if owner != '' %} -->
+      <p><small>Written by <a href='/blog?user={{ blog.owner.username}}'> {{ blog.owner.username }}</a></small></p>
+   <!-- {% endif %} -->
 {% endfor %}
 
 {% endblock %}

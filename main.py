@@ -13,12 +13,14 @@ class Blog(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     title = db.Column(db.String(240))
     body = db.Column(db.Text)
+    
+    # foreign key owner_id links user.id to the blog post
     owner_id = db.Column(db.Integer, db.ForeignKey('user.id')) 
 
     ''' Each Blog object has an owner associated with it 
     (passed to it in the constructor), so you can access the
-     properties of that owner (such as username, or id) with 
-     dot notation (above and below) '''
+     properties of that owner (such as username, or id) owner.username
+     and owner.id with dot notation (above and below) '''
     def __init__(self, title, body, owner):
         self.title = title
         self.body = body
@@ -31,6 +33,8 @@ class User(db.Model):
     username = db.Column(db.String(120))
     password = db.Column(db.String(120))
 
+    ''' signifies a relationship between the blog table and the browser,
+    thus binding this user with the blog posts they write '''
     blogs = db.relationship('Blog', backref='owner')
 
     def __init__(self, username, password):
@@ -65,28 +69,32 @@ def list_blogs():
         username = (request.args.get('user'))
         owner = User.query.filter_by(username=username).first()
         blogs = Blog.query.filter_by(owner_id=owner.id).all()
-        return render_template('blog.html', blogs=blogs)
+        return render_template('blog.html', blogs=blogs, owner=owner)
+    else:
+        owner = ''
 
     blog_id = (request.args.get('id'))
-    # get the variable id from the browser 
+    # get the variable id from the dictionary request.args 
+
     if 'id' in request.args:
+
         # render the form after a blog title is clicked
         blogs = Blog.query.get(blog_id)
         return render_template('singleUser.html', blogs=blogs)        
     else:
         # render the form the first time
-        if blog_id is None:
+        if not blog_id:
+
             blogs = Blog.query.all()
-            return render_template('blog.html', title="Blogz", blogs=blogs)
-    
-    #user = User(request.args.get('user'))
-    #owner = Blog.query.filter_by(username=username).first()
-    #blogs = Blog.query.filter_by(owner=owner).all()
-    #return render_template('blog.html', blogs=blogs, user=user)
+
+            owner = User.query.all()
+
+            return render_template('blog.html', blogs=blogs, owner=owner)
 
 
 @app.route('/login', methods=['POST', 'GET'])
 def login():
+
 
     if request.method=='POST':
 
@@ -103,10 +111,10 @@ def login():
                 flash("Logged in")
                 return redirect('/newpost')
             else:
-                passwd_err = "Incorrect password"
+                passwd_err = "Invalid password"
                 return render_template('login.html', passwd_err=passwd_err)
         else:
-                user_name_err = "Username does not exist"
+                user_name_err = "Invalid Username"
                 return render_template('login.html', user_name_err=user_name_err)
 
     return render_template('login.html')
@@ -125,24 +133,21 @@ def signup():
         passwd = request.form['passwd']
         verify_passwd = request.form['verify_passwd']
 
+        # check if user exists
+        existing_user = User.query.filter_by(username=user_name).first()
+
+        if existing_user:
+            user_name_err = "Duplicate user"
+            return render_template("signup.html", name=user_name, 
+                user_name_err=user_name_err, passwd_err=passwd_err, 
+                verify_passwd_err=verify_passwd_err)
+
         #validate user's data, password=verify_password, etc
-        if user_name == '':
-            user_name_err = 'Username cannot be empty'
+        if user_name == '' or len(user_name) < 3 or ' ' in user_name:
+            user_name_err = 'Invalid Username'
 
-        elif ' ' in user_name:
-            flash('Username cannot have spaces')
-
-        elif len(user_name) < 3:
-            user_name_err = 'Username needs to be at least 3 characters long'
-
-        if passwd == '':
-            passwd_err = 'Password cannot be empty'
-
-        elif ' ' in passwd:
-            passwd_err = 'Password cannot have spaces'
-    
-        elif len(passwd) < 3:
-            passwd_err = 'Password needs to be at least 3 characters long'
+        if passwd == '' or ' ' in passwd or len(passwd) < 3:
+            passwd_err = 'Invalid Password'
 
         if verify_passwd != passwd:
             verify_passwd_err = "Passwords do not match"
@@ -154,20 +159,12 @@ def signup():
                  user_name_err=user_name_err, passwd_err=passwd_err, 
                  verify_passwd_err=verify_passwd_err)
         else:
-            # check if user exists
-            existing_user = User.query.filter_by(username=user_name).first()
-            # if new user, add to db
-            if not existing_user:
-                new_user = User(user_name, passwd)
-                db.session.add(new_user)
-                db.session.commit()
-                session['new_user'] =  new_user.username
-                return redirect('/newpost')
-            else:
-
-                return render_template("signup.html", name=user_name, 
-                     user_name_err=user_name_err, passwd_err=passwd_err, 
-                     verify_passwd_err=verify_passwd_err)
+            # if no errors found, add to db
+            new_user = User(user_name, passwd)
+            db.session.add(new_user)
+            db.session.commit()
+            session['new_user'] =  new_user.username
+            return redirect('/newpost')
 
     return render_template('signup.html', user_name_err=user_name_err, 
 passwd_err=passwd_err, verify_passwd_err=verify_passwd_err)
@@ -180,32 +177,38 @@ def newpost():
     if request.method == 'POST':
 
         # initialize error variables
-        username_err = ''
+        title_err = ''
         body_err = ''    
         blog_body = ''
         blog_owner = ''
 
+        # get the username out of the session, then filter the user result set 
+        # by that username and get the first one (should only be one 
+        # since usernames are unique) and place it in the owner variable to
+        # add to db
         owner = User.query.filter_by(username=session['username']).first()
 
         # request.form takes name= from the html file as an argument
         blog_title = request.form["blog_title"]
         blog_body = request.form['blog_body']
  
-        # check if blog username or blog password is left empty       
-        if not blog_title or  blog_title.strip() == '':
-            username_err = 'Please fill in the username'
+        # check if blog title or blog body is left empty       
+        if not blog_title or blog_title.strip() == '':
+            title_err = 'Please fill in the title'
 
         if not blog_body or blog_body.strip() == '':
             body_err = 'Please fill in the body'
 
-        if not username_err and not body_err:
+        if not title_err and not body_err:
             # create a new object blogs from inputs submitted and add to database
             blogs = Blog(blog_title, blog_body, owner)
             db.session.add(blogs)
             db.session.commit()
+            title_err = ''
+            body_err = ''    
             return redirect('/blog?id={}'.format(blogs.id))
         else:
-            return render_template("newpost.html", blog_title=blog_title, blog_body=blog_body, username_err=username_err, body_err=body_err)
+            return render_template("newpost.html", blog_title=blog_title, blog_body=blog_body, title_err=title_err, body_err=body_err)
 
     # render on a GET request - the first time the form is rendered
     return render_template("newpost.html")  
