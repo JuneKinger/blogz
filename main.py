@@ -66,27 +66,21 @@ def list_blogs():
     or <a href='/blog?user={{ user.id }}'>{{ user.username }}</a> from blog.html
     if parameter is 'user' '''
     blog_id = request.args.get('id')
+    username = (request.args.get('user'))
+    owner = User.query.filter_by(username=username).first()
+
     if request.args.get('user'):
-        username = (request.args.get('user'))
-        owner = User.query.filter_by(username=username).first()
+
+        # get all the blog posts where blog.owner_id (blog table) = id from user table
         blogs = Blog.query.filter_by(owner_id=owner.id).all()
         return render_template('blog.html', blogs=blogs, owner=owner)
     
     # get the variable id from the dictionary request.args 
-
     elif request.args.get('id'):
 
-        blog_id = request.args.get('id')
-        username = (request.args.get('user'))
-        owner = User.query.filter_by(username=username).first()
         blogs = Blog.query.filter_by(id=blog_id).all()
         return render_template('blog.html', blogs=blogs, owner=owner) 
-
-        # render the form after a blog title is clicked
-        #blogs = Blog.query.filter_by(owner_id=owner.id).all()
-        #username = (request.args.get('user'))
-        #owner = User.query.filter_by(username=username).first()
-        #return render_template('blog.html', blogs=blogs, owner=owner)        
+      
     else:
         # render the form the first time
         if not blog_id:
@@ -213,8 +207,7 @@ def newpost():
             title_err = ''
             body_err = ''    
             return redirect('/blog?id={}'.format(blogs.id))
-            #existing_user = User.query.filter_by(username=user_name).first()
-            #return render_template('blog.html', owner=owner, blogs=blogs)
+
         else:
             return render_template("newpost.html", blog_title=blog_title, blog_body=blog_body, title_err=title_err, body_err=body_err)
 
