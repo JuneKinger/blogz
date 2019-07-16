@@ -12,6 +12,10 @@
                 padding-right: 16px
             }
 
+            .error {
+                color: red;
+            }
+
         </style>
     </head>
     <body>
@@ -21,6 +25,18 @@
 
         <a href='/logout' class = 'align'>logout</a>
         <a href='/login'  class = 'align'>login</a>
+
+        {% with messages = get_flashed_messages(with_categories=True) %}
+        <ul>
+            <!-- this is a tuple of message, category -->
+            {% for category, message in messages %}
+            <!-- class= can be used as a css style above. This can be used
+            for different categories - eg information category colored blue
+            warning category colored yellow, etc -->
+                <li class="{{category}}">{{message}}</li>
+            {% endfor %}
+        </ul>
+        {% endwith %}
 
     {% block content %}
     {% endblock %}

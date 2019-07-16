@@ -65,22 +65,28 @@ def list_blogs():
     that is <a href='/blog?id={{ blog.id }}'>{{ blog.title }}</a> from blog.html
     or <a href='/blog?user={{ user.id }}'>{{ user.username }}</a> from blog.html
     if parameter is 'user' '''
-    if 'user' in request.args:
+    blog_id = request.args.get('id')
+    if request.args.get('user'):
         username = (request.args.get('user'))
         owner = User.query.filter_by(username=username).first()
         blogs = Blog.query.filter_by(owner_id=owner.id).all()
         return render_template('blog.html', blogs=blogs, owner=owner)
-    else:
-        owner = ''
-
-    blog_id = (request.args.get('id'))
+    
     # get the variable id from the dictionary request.args 
 
-    if 'id' in request.args:
+    elif request.args.get('id'):
+
+        blog_id = request.args.get('id')
+        username = (request.args.get('user'))
+        owner = User.query.filter_by(username=username).first()
+        blogs = Blog.query.filter_by(id=blog_id).all()
+        return render_template('blog.html', blogs=blogs, owner=owner) 
 
         # render the form after a blog title is clicked
-        blogs = Blog.query.get(blog_id)
-        return render_template('singleUser.html', blogs=blogs)        
+        #blogs = Blog.query.filter_by(owner_id=owner.id).all()
+        #username = (request.args.get('user'))
+        #owner = User.query.filter_by(username=username).first()
+        #return render_template('blog.html', blogs=blogs, owner=owner)        
     else:
         # render the form the first time
         if not blog_id:
@@ -108,7 +114,7 @@ def login():
                 # makes a key:value pair in session
                 session['username'] =  username
 
-                flash("Logged in")
+                flash("Logged in", "error")
                 return redirect('/newpost')
             else:
                 passwd_err = "Invalid password"
@@ -207,6 +213,8 @@ def newpost():
             title_err = ''
             body_err = ''    
             return redirect('/blog?id={}'.format(blogs.id))
+            #existing_user = User.query.filter_by(username=user_name).first()
+            #return render_template('blog.html', owner=owner, blogs=blogs)
         else:
             return render_template("newpost.html", blog_title=blog_title, blog_body=blog_body, title_err=title_err, body_err=body_err)
 
