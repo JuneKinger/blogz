@@ -8,9 +8,11 @@
       <a href='/blog?id={{ blog.id }}'>{{ blog.title }}</a>
    </h3>
    <p>{{ blog.body}}</p>
-   <!-- {% if owner != '' %} -->
+   
+   <!-- owner has the user details automatically since the relationship is established -->
+      
       <p><small>Written by <a href='/blog?user={{ blog.owner.username}}'> {{ blog.owner.username }}</a></small></p>
-   <!-- {% endif %} -->
+
 {% endfor %}
 
 {% endblock %}

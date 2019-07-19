@@ -33,7 +33,7 @@ class User(db.Model):
     username = db.Column(db.String(120))
     password = db.Column(db.String(120))
 
-    ''' signifies a relationship between the blog table and the browser,
+    ''' signifies a relationship between the blog table and the user,
     thus binding this user with the blog posts they write '''
     blogs = db.relationship('Blog', backref='owner')
 
@@ -65,21 +65,31 @@ def list_blogs():
     that is <a href='/blog?id={{ blog.id }}'>{{ blog.title }}</a> from blog.html
     or <a href='/blog?user={{ user.id }}'>{{ user.username }}</a> from blog.html
     if parameter is 'user' '''
+
+    # also value of request.args.get() is None if either 'id' or 'user' is 
+    # not applicable. That's why it does not error out
     blog_id = request.args.get('id')
     username = (request.args.get('user'))
+    
+    # owner is an object that can be used, for eg, as owner.id or searching
+    # tables with owner object, eg blogs = Blog.query.filter_by(owner=owner).all()
     owner = User.query.filter_by(username=username).first()
 
     if request.args.get('user'):
 
-        # get all the blog posts where blog.owner_id (blog table) = id from user table
-        blogs = Blog.query.filter_by(owner_id=owner.id).all()
-        return render_template('blog.html', blogs=blogs, owner=owner)
+        # EITHER get all the blog posts where column owner_id from blog table
+        # = id from object owner above         
+        # blogs = Blog.query.filter_by(owner_id=owner.id).all()
+        # OR 
+        # blogs = Blog.query.filter_by(owner=owner).all()
+        blogs = Blog.query.filter_by(owner=owner).all()
+        return render_template('blog.html', blogs=blogs)
     
     # get the variable id from the dictionary request.args 
     elif request.args.get('id'):
 
         blogs = Blog.query.filter_by(id=blog_id).all()
-        return render_template('blog.html', blogs=blogs, owner=owner) 
+        return render_template('blog.html', blogs=blogs) 
       
     else:
         # render the form the first time
@@ -87,9 +97,9 @@ def list_blogs():
 
             blogs = Blog.query.all()
 
-            owner = User.query.all()
-
-            return render_template('blog.html', blogs=blogs, owner=owner)
+            # I can only send blogs across to blog.html (and don't need owner)
+            # because blogs and owner relationship is already established in backref = 'owner'
+            return render_template('blog.html', blogs=blogs)
 
 
 @app.route('/login', methods=['POST', 'GET'])
@@ -184,7 +194,7 @@ def newpost():
 
         # get the username out of the session, then filter the user result set 
         # by that username and get the first one (should only be one 
-        # since usernames are unique) and place it in the owner variable to
+        # since usernames are unique) and place it in owner (object) to
         # add to db
         owner = User.query.filter_by(username=session['username']).first()
 
